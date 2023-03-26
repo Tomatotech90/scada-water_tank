@@ -72,8 +72,17 @@ WORKDIR /app
 # Copy the login.php file from your local project directory into the container
 COPY ./login.php /app/login.php
 
+# Create a script to start all services
+RUN echo "#!/bin/bash\n\
+service php7.4-fpm start\n\
+nginx -g 'daemon off;' &\n\
+tcpdump -i any -w /app/tcpdump.pcap" > /start_services.sh
+
+# Make the script executable
+RUN chmod +x /start_services.sh
+
 # Expose ports 80 and 69
 EXPOSE 80 69
 
 # Start Nginx, PHP-FPM, and tcpdump on container start
-CMD service php7.4-fpm start && nginx -g 'daemon off;' & tcpdump -i any -w /app/tcpdump.pcap
+CMD ["/start_services.sh"]
