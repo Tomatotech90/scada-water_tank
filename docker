@@ -26,6 +26,12 @@ RUN apt-get update && \
     tcpdump \
     && rm -rf /var/lib/apt/lists/*
 
+# Install libmodbus and its dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libmodbus-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Download and install phpMyAdmin
 RUN wget https://files.phpmyadmin.net/phpMyAdmin/5.1.3/phpMyAdmin-5.1.3-all-languages.zip && \
     unzip phpMyAdmin-5.1.3-all-languages.zip && \
@@ -81,8 +87,8 @@ tcpdump -i any -w /app/tcpdump.pcap" > /start_services.sh
 # Make the script executable
 RUN chmod +x /start_services.sh
 
-# Expose ports 80 and 69
-EXPOSE 80 69
+# Expose ports 80, 69, and 502
+EXPOSE 80 69 502
 
 # Start Nginx, PHP-FPM, and tcpdump on container start
-CMD ["/start_services.sh"]
+CMD ["/start_services.sh"] 
