@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Tank System Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+    .tank {
+      flex: 1;
+      min-width: 24%;
+      margin: 1%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+      background-color: white;
+    }
+    .tank h3 {
+      margin: 0;
+      margin-bottom: 10px;
+    }
+    .log {
+      margin: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+    .log h2 {
+      margin: 0;
+      margin-bottom: 10px;
+    }
+    .message {
+      padding: 5px;
+      margin: 5px 0;
+      border-radius: 3px;
+    }
+    .add {
+      background-color: #add8e6;
+    }
+    .discharge {
+      background-color: #ffcccb;
+    }
+  </style>
+</head>
+<body>
+  <h1>Water Tank System Dashboard</h1>
+  <div class="container">
+    <div class="tank" id="tank-1">
+      <h3>Tank 1</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(1)">Add Water</button>
+      <button onclick="dischargeWater(1)">Discharge Water</button>
+    </div>
+    <div class="tank" id="tank-2">
+      <h3>Tank 2</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(2)">Add Water</button>
+      <button onclick="dischargeWater(2)">Discharge Water</button>
+    </div>
+    <div class="tank" id="tank-3">
+      <h3>Tank 3</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(3)">Add Water</button>
+      <button onclick="dischargeWater(3)">Discharge Water</button>
+    </div>
+    <div class="tank" id="tank-4">
+      <h3>Tank 4</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(4)">Add Water</button>
+      <button onclick="dischargeWater(4)">Discharge Water</button>
+</div>
+<div class="tank" id="tank-5">
+<h3>Tank 5</h3>
+<p>Percentage: <span class="percentage">0</span>%</p>
+<button onclick="addWater(5)">Add Water</button>
+<button onclick="dischargeWater(5)">Discharge Water</button>
+</div>
+<div class="tank" id="tank-6">
+<h3>Tank 6</h3>
+<p>Percentage: <span class="percentage">0</span>%</p>
+<button onclick="addWater(6)">Add Water</button>
+<button onclick="dischargeWater(6)">Discharge Water</button>
+</div>
+  </div>
+  <div class="log" id="log">
+    <h2>Logs</h2>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <div id="message-container"></div>
+  </div>
+  <script>
+    const tanks = {
+      1: { percentage: 0 },
+      2: { percentage: 0 },
+      3: { percentage: 0 },
+      4: { percentage: 0 },
+      5: { percentage: 0 },
+      6: { percentage: 0 },
+    };
+function addWater(tankId) {
+  const tank = tanks[tankId];
+  const currentPercentage = tank.percentage;
+  const newPercentage = currentPercentage + 10;
+  if (newPercentage > 100) {
+    tank.percentage = 100;
+  } else {
+    tank.percentage = newPercentage;
+  }
+  updatePercentage(tankId, tank.percentage);
+  addToLog(`Added 10% water to Tank ${tankId}.`, 'add');
+}
+
+function dischargeWater(tankId) {
+  const tank = tanks[tankId];
+  const currentPercentage = tank.percentage;
+  const newPercentage = currentPercentage - 10;
+  if (newPercentage < 0) {
+    tank.percentage = 0;
+  } else {
+    tank.percentage = newPercentage;
+  }
+  updatePercentage(tankId, tank.percentage);
+  addToLog(`Discharged 10% water from Tank ${tankId}.`, 'discharge');
+}
+
+function updatePercentage(tankId, percentage) {
+  const tankElement = document.querySelector(`#tank-${tankId}`);
+  const percentageElement = tankElement.querySelector('.percentage');
+  percentageElement.textContent = percentage;
+}
+
+function addToLog(message, type) {
+  const messageContainer = document.querySelector('#message-container');
+  const messageElement = document.createElement('div');
+  messageElement.textContent = message;
+  messageElement.classList.add('message');
+  messageElement.classList.add(type);
+  messageContainer.appendChild(messageElement);
+}
+
+function clearLogs() {
+  const messageContainer = document.querySelector('#message-container');
+  messageContainer.innerHTML = '';
+}
+</script>
+</body>
+</html>
