@@ -1,0 +1,117 @@
+# Use the official Ubuntu base image
+FROM ubuntu:20.04
+
+# Set environment variables to avoid tzdata interaction
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Update package lists and install essential packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    tzdata \
+    ca-certificates \
+    curl \
+    nano \
+    wget \
+    unzip \
+    git \
+    nginx \
+    php-fpm \
+    php-mbstring \
+    php-zip \
+    php-gd \
+    php-json \
+    php-curl \
+    php-xml \
+    tcpdump \
+    terminator \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python and pip
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies for app.py and modbus_server.py
+RUN pip3 install flask pymodbus
+
+# Download and install phpMyAdmin
+RUN wget https://files.phpmyadmin.net/phpMyAdmin/5.1.3/phpMyAdmin-5.1.3-all-languages.zip && \
+    unzip phpMyAdmin-5.1.3-all-languages.zip && \
+    mv phpMyAdmin-5.1.3-all-languages /var/www/phpmyadmin && \
+    rm phpMyAdmin-5.1.3-all-languages.zip
+
+# Remove the default Nginx configuration
+RUN rm /etc/nginx/sites-enabled/default
+
+# Create a new Nginx configuration file
+RUN echo "server { \
+  listen 80; \
+  root /app; \
+  index dashboard.html index.html; \
+  server_name _; \
+  location / { \
+    try_files \$uri \$uri/ =404; \
+  } \
+  location /app.py { \
+    include snippets/fastcgi-php.conf; \
+    fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; \
+  } \
+  location /modbus_server.py { \
+    proxy_pass http://localhost:5000; \
+    proxy_http_version 1.1; \
+    proxy_set_header Upgrade \$http_upgrade; \
+    proxy_set_header Connection 'upgrade'; \
+    proxy_set_header Host \$host; \
+    proxy_cache_bypass \$http_upgrade; \
+  } \
+  location ~ \.php$ { \
+    include snippets/fastcgi-php.conf; \
+    fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; \
+  } \
+} \
+server { \
+  listen 69; \
+  root /var/www/phpmyadmin; \
+  index index.php index.html; \
+  server_name _; \
+  location / { \
+    try_files \$uri \$uri/ =404; \
+  } \
+  location ~ \.php$ { \
+    include snippets/fastcgi-php.conf; \
+    fastcgi_pass unix:/var/run/php/php7.4-fpm.sock; \
+  } \
+}" > /etc/nginx/sites-available/app
+
+# Enable the new Nginx configuration
+RUN ln -s /etc/nginx/sites-available/app /etc/nginx/sites-enabled/
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the necessary files into the container
+COPY ./dashboard.html /app/dashboard.html
+COPY ./index.html /app/index.html
+COPY ./app.py /app/app.py
+COPY ./modbus_server.py /app/modbus_server.py
+
+# Create a script to start all services
+RUN echo "#!/bin/bash\n\
+service php7.4-fpm start
+nginx -g 'daemon off;' &\n\
+python3 modbus_server.py &\n\
+python3 app.py &\n\
+tcpdump -i any -w /app/tcpdump.pcap" > /start_services.sh
+
+# Make the script executable
+RUN chmod +x /start_services.sh
+
+# Expose ports 80, 69, 502, and 5000
+EXPOSE 80 69 502 5000
+
+# Start Nginx, PHP-FPM, the Modbus server, Flask app, and tcpdump on container start
+CMD ["/start_services.sh"]
+
