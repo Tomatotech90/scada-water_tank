@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .tank {
+            display: inline-block;
+            width: 100px;
+            height: 200px;
+            border: 1px solid black;
+            position: relative;
+            margin-right: 20px;
+        }
+        .tank-level {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #00f;
+            text-align: center;
+        }
+        .log-add { color: blue; }
+        .log-discharge { color: red; }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tank Levels</h1>
+    <div id="tanks"></div>
+
+    <h1>Controls</h1>
+    <div class="controls">
+        Tank ID: <input type="number" id="tank-id" min="0" max="5">
+        Amount: <input type="number" id="amount" min="1" max="10">
+        <button id="add-water">Add Water</button>
+        <button id="discharge-water">Discharge Water</button>
+    </div>
+
+    <h1>Logs</h1>
+    <div id="logs"></div>
+    <button id="clear-logs">Clear Logs</button>
+
+    <h1>Server Status</h1>
+    <div id="server-status">Unknown</div>
+
+    <script>
+        const tanksElement = document.getElementById('tanks');
+        const addWaterButton = document.getElementById('add-water');
+        const dischargeWaterButton = document.getElementById('discharge-water');
+        const tankIdInput = document.getElementById('tank-id');
+        const amountInput = document.getElementById('amount');
+        const logsElement = document.getElementById('logs');
+        const clearLogsButton = document.getElementById('clear-logs');
+        const serverStatusElement = document.getElementById('server-status');
+
+        function createTankElements() {
+            for (let i = 0; i < 6; i++) {
+                const tankElement = document.createElement('div');
+                tankElement.classList.add('tank');
+                tankElement.id = `tank-${i}`;
+
+                const tankLabelElement = document.createElement('div');
+                tankLabelElement.textContent = `Tank ${i}`;
+                tankElement.appendChild(tankLabelElement);
+
+                const tankLevelElement = document.createElement('div');
+                tankLevelElement.classList.add('tank-level');
+                tankLevelElement.id = `tank-level-${i}`;
+                tankElement.appendChild(tankLevelElement);
+
+                tanksElement.appendChild(tankElement);
+            }
+        }
+
+        function updateTankLevels() {
+            fetch('/api/tank_levels')
+                .then(response => response.json())
+                .then(data => {
+                    const tankLevels = data.tank_levels;
+                    tankLevels.forEach((level, index) => {
+                        const tankLevelElement = document.getElementById(`tank-level-${index}`);
+                        tankLevelElement.style.height = `${level * 10}%`;
+                        tankLevelElement.textContent = `${level * 10}%`;
+                    });
+                    serverStatusElement.textContent = 'Online';
+                })
+                .catch(error => {
+                    serverStatusElement.textContent = 'Offline';
+                });
+        }
+
+               addWaterButton.addEventListener('click', () => {
+            const tankId = tankIdInput.value;
+            const amount = amountInput.value;
+            fetch('/api/add_water', {
+                method: 'POST',
+                body: new URLSearchParams({ tank_id: tankId, amount: amount }),
+            })
+                .then(() => {
+                    updateTankLevels();
+                    logsElement.innerHTML += `<p class="log-add">Added ${amount} to Tank ${tankId}</p>`;
+                });
+        });
+
+        dischargeWaterButton.addEventListener('click', () => {
+            const tankId = tankIdInput.value;
+            const amount = amountInput.value;
+            fetch('/api/discharge_water', {
+                method: 'POST',
+                body: new URLSearchParams({ tank_id: tankId, amount: amount }),
+            })
+                .then(() => {
+                    updateTankLevels();
+                    logsElement.innerHTML += `<p class="log-discharge">Discharged ${amount} from Tank ${tankId}</p>`;
+                });
+        });
+
+        clearLogsButton.addEventListener('click', () => {
+            logsElement.innerHTML = '';
+        });
+
+        createTankElements();
+        updateTankLevels();
+        setInterval(updateTankLevels, 5000);  // Update tank levels every 5 seconds
+    </script>
+</body>
+</html>
+
