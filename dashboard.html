@@ -1,137 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .tank {
-            display: inline-block;
-            width: 100px;
-            height: 200px;
-            border: 1px solid black;
-            position: relative;
-            margin-right: 20px;
-        }
-        .tank-level {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #00f;
-            text-align: center;
-        }
-        .log-add { color: blue; }
-        .log-discharge { color: red; }
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Tank System Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+    .tank {
+      flex: 1;
+      min-width: 24%;
+      margin: 1%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+      background-color: white;
+    }
+    .tank h3 {
+      margin: 0;
+      margin-bottom: 10px;
+    }
+    .log {
+      margin: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+    .log h2 {
+      margin: 0;
+      margin-bottom: 10px;
+    }
+    .message {
+      padding: 5px;
+      margin: 5px 0;
+      border-radius: 3px;
+    }
+    .add {
+      background-color: #add8e6;
+    }
+    .discharge {
+      background-color: #ffcccb;
+    }
+  </style>
 </head>
 <body>
-    <h1>Tank Levels</h1>
-    <div id="tanks"></div>
-
-    <h1>Controls</h1>
-    <div class="controls">
-        Tank ID: <input type="number" id="tank-id" min="0" max="5">
-        Amount: <input type="number" id="amount" min="1" max="10">
-        <button id="add-water">Add Water</button>
-        <button id="discharge-water">Discharge Water</button>
+  <h1>Water Tank System Dashboard</h1>
+  <div class="container">
+    <div class="tank" id="tank-1">
+      <h3>Tank 1</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(1)">Add Water</button>
+      <button onclick="dischargeWater(1)">Discharge Water</button>
     </div>
+    <div class="tank" id="tank-2">
+      <h3>Tank 2</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(2)">Add Water</button>
+      <button onclick="dischargeWater(2)">Discharge Water</button>
+    </div>
+    <div class="tank" id="tank-3">
+      <h3>Tank 3</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(3)">Add Water</button>
+      <button onclick="dischargeWater(3)">Discharge Water</button>
+    </div>
+    <div class="tank" id="tank-4">
+      <h3>Tank 4</h3>
+      <p>Percentage: <span class="percentage">0</span>%</p>
+      <button onclick="addWater(4)">Add Water</button>
+      <button onclick="dischargeWater(4)">Discharge Water</button>
+</div>
+<div class="tank" id="tank-5">
+<h3>Tank 5</h3>
+<p>Percentage: <span class="percentage">0</span>%</p>
+<button onclick="addWater(5)">Add Water</button>
+<button onclick="dischargeWater(5)">Discharge Water</button>
+</div>
+<div class="tank" id="tank-6">
+<h3>Tank 6</h3>
+<p>Percentage: <span class="percentage">0</span>%</p>
+<button onclick="addWater(6)">Add Water</button>
+<button onclick="dischargeWater(6)">Discharge Water</button>
+</div>
+  </div>
+  <div class="log" id="log">
+    <h2>Logs</h2>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <div id="message-container"></div>
+  </div>
+  <script>
+   const tanks = {
+    1: { percentage: 0 },
+    2: { percentage: 0 },
+    3: { percentage: 0 },
+    4: { percentage: 0 },
+    5: { percentage: 0 },
+    6: { percentage: 0 },
+  };
+  function addWater(tankId) {
+    const tank = tanks[tankId];
+    const currentPercentage = tank.percentage;
+    const newPercentage = currentPercentage + 10;
+    if (newPercentage > 100) {
+      tank.percentage = 100;
+    } else {
+      tank.percentage = newPercentage;
+    }
+    updatePercentage(tankId, tank.percentage);
+    addToLog(`Added 10% water to Tank ${tankId}.`, 'add');
+    window.postMessage({ type: 'addWater', tankId: tankId }, '*');
+  }
 
-    <h1>Logs</h1>
-    <div id="logs"></div>
-    <button id="clear-logs">Clear Logs</button>
+  function dischargeWater(tankId) {
+    const tank = tanks[tankId];
+    const currentPercentage = tank.percentage;
+    const newPercentage = currentPercentage - 10;
+    if (newPercentage < 0) {
+      tank.percentage = 0;
+    } else {
+      tank.percentage = newPercentage;
+    }
+    updatePercentage(tankId, tank.percentage);
+    addToLog(`Discharged 10% water from Tank ${tankId}.`, 'discharge');
+    window.postMessage({ type: 'dischargeWater', tankId: tankId }, '*');
+  }
 
-    <h1>Server Status</h1>
-    <div id="server-status">Unknown</div>
+  function updatePercentage(tankId, percentage) {
+    const tankElement = document.querySelector(`#tank-${tankId}`);
+    const percentageElement = tankElement.querySelector('.percentage');
+    percentageElement.textContent = percentage;
+  }
 
-    <script>
-        const tanksElement = document.getElementById('tanks');
-        const addWaterButton = document.getElementById('add-water');
-        const dischargeWaterButton = document.getElementById('discharge-water');
-        const tankIdInput = document.getElementById('tank-id');
-        const amountInput = document.getElementById('amount');
-        const logsElement = document.getElementById('logs');
-        const clearLogsButton = document.getElementById('clear-logs');
-        const serverStatusElement = document.getElementById('server-status');
+  function addToLog(message, type) {
+    const messageContainer = document.querySelector('#message-container');
+    const messageElement = document.createElement('div');
+    messageElement.textContent = message;
+    messageElement.classList.add('message');
+    messageElement.classList.add(type);
+    messageContainer.appendChild(messageElement);
+  }
 
-        function createTankElements() {
-            for (let i = 0; i < 6; i++) {
-                const tankElement = document.createElement('div');
-                tankElement.classList.add('tank');
-                tankElement.id = `tank-${i}`;
+  function clearLogs() {
+    const messageContainer = document.querySelector('#message-container');
+    messageContainer.innerHTML = '';
+  }
 
-                const tankLabelElement = document.createElement('div');
-                tankLabelElement.textContent = `Tank ${i}`;
-                tankElement.appendChild(tankLabelElement);
-
-                const tankLevelElement = document.createElement('div');
-                tankLevelElement.classList.add('tank-level');
-                tankLevelElement.id = `tank-level-${i}`;
-                tankElement.appendChild(tankLevelElement);
-
-                tanksElement.appendChild(tankElement);
-            }
-        }
-
-        function updateTankLevels() {
-            fetch('/api/tank_levels')
-                .then(response => response.json())
-                .then(data => {
-                    const tankLevels = data.tank_levels;
-                    tankLevels.forEach((level, index) => {
-                        const tankLevelElement = document.getElementById(`tank-level-${index}`);
-                        tankLevelElement.style.height = `${level * 10}%`;
-                        tankLevelElement.textContent = `${level * 10}%`;
-                    });
-                    serverStatusElement.textContent = 'Online';
-                })
-                .catch(error => {
-                    serverStatusElement.textContent = 'Offline';
-                });
-        }
-
-               addWaterButton.addEventListener('click', () => {
-            const tankId = tankIdInput.value;
-            const amount = amountInput.value;
-            fetch('/api/add_water', {
-                method: 'POST',
-                body: new URLSearchParams({ tank_id: tankId, amount: amount }),
-            })
-                .then(() => {
-                    updateTankLevels();
-                    logsElement.innerHTML += `<p class="log-add">Added ${amount} to Tank ${tankId}</p>`;
-                });
-        });
-
-        dischargeWaterButton.addEventListener('click', () => {
-            const tankId = tankIdInput.value;
-            const amount = amountInput.value;
-            fetch('/api/discharge_water', {
-                method: 'POST',
-                body: new URLSearchParams({ tank_id: tankId, amount: amount }),
-            })
-                .then(() => {
-                    updateTankLevels();
-                    logsElement.innerHTML += `<p class="log-discharge">Discharged ${amount} from Tank ${tankId}</p>`;
-                });
-        });
-
-        clearLogsButton.addEventListener('click', () => {
-            logsElement.innerHTML = '';
-        });
-
-        createTankElements();
-        updateTankLevels();
-        setInterval(updateTankLevels, 5000);  // Update tank levels every 5 seconds
-    </script>
+  window.addEventListener('message', (event) => {
+    if (event.data.type === 'updatePercentage') {
+      const tankId = event.data.tankId;
+      const percentage = event.data.percentage;
+      updatePercentage(tankId, percentage);
+    }
+  });
+</script>
 </body>
 </html>
-
