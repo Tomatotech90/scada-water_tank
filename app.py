@@ -20,7 +20,6 @@ for i in range(1, NUM_TANKS+1):
         'level': 0,
         'temperature': 0,
     }
-
 # Modbus server functions
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,7 +109,6 @@ def discharge_water():
     tank = tanks[tank_id]
     tank['level'] = max(0, tank['level'] - amount)
     return jsonify({'status': 'success', 'message': f'Discharged {amount} liters from tank {tank_id}'})
-
 # Dashboard route
 @app.route('/')
 def dashboard():
