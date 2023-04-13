@@ -1,0 +1,2 @@
+Flask==2.1.2
+Flask-SocketIO==6.1.1
